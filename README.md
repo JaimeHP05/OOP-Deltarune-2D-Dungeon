@@ -40,10 +40,3 @@ The codebase is structured for maintainability and scalability, strictly followi
 | **1, 2, 3...** | Use items from the inventory |
 | **G** | Save game (only on safe tiles) |
 | **ESC** | Save game & Go to Menu |
-
-## How to Run
-
-1. Ensure you have the Java Development Kit (JDK 8 or higher) installed on your system.
-2. Clone this repository:
-   ```bash
-   git clone [https://github.com/JaimeHP05/OOP-Deltarune-2D-Dungeon.git]([https://github.com/YourUsername/Deltarune-Mystery-Dungeon.git](https://github.com/JaimeHP05/OOP-Deltarune-2D-Dungeon.git))
