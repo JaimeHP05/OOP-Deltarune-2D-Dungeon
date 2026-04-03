@@ -100,6 +100,7 @@ public class GamePanel extends JPanel {
         objectSprites.put(Trap.class, loadImage("code/assets/trampa.png"));
         objectSprites.put(Stairs.class, loadImage("code/assets/escaleras.png"));
     }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -111,7 +112,6 @@ public class GamePanel extends JPanel {
         int width = grid.getWidth();
         int height = grid.getHeight();
 
-        // Not re-rendering background every frame
         if (staticBackground == null || cachedRoom != grid.getCurrentRoom()) {
             cachedRoom = grid.getCurrentRoom();
             buildStaticBackground();
@@ -119,7 +119,6 @@ public class GamePanel extends JPanel {
 
         g2d.drawImage(staticBackground, offsetX, offsetY, null);
 
-        // Interactables and objects
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 code.world.Tile tile = grid.getTile(x, y);
@@ -133,26 +132,41 @@ public class GamePanel extends JPanel {
                     if (content instanceof Chest) {
                         Chest chest = (Chest) content;
                         BufferedImage chestImg = chest.isOpen() ? imgChestOpen : imgChestClosed;
-                        if (chestImg != null) g2d.drawImage(chestImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
-                        else { g.setColor(chest.isOpen() ? Color.DARK_GRAY : Color.YELLOW); g.fillRect(drawX + 5, drawY + 5, 30, 30); }
+                        if (chestImg != null) {
+                            g2d.drawImage(chestImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
+                        } else {
+                            g.setColor(chest.isOpen() ? Color.DARK_GRAY : Color.YELLOW);
+                            g.fillRect(drawX + 5, drawY + 5, 30, 30);
+                        }
                     } 
                     else if (content instanceof UpgradeStation) {
                         UpgradeStation station = (UpgradeStation) content;
-                        if (!station.isUsed() && imgSavePointSheet != null) {
-                            int currentFrame = (int) ((System.currentTimeMillis() / 150) % SAVE_POINT_FRAMES);
-                            int frameWidth = imgSavePointSheet.getWidth() / SAVE_POINT_FRAMES;
-                            int frameHeight = imgSavePointSheet.getHeight();
-                            g2d.drawImage(imgSavePointSheet, drawX, drawY, drawX + TILE_SIZE, drawY + TILE_SIZE, 
-                                currentFrame * frameWidth, 0, (currentFrame + 1) * frameWidth, frameHeight, null);
+                        if (!station.isUsed()) {
+                            if (imgSavePointSheet != null) {
+                                int currentFrame = (int) ((System.currentTimeMillis() / 150) % SAVE_POINT_FRAMES);
+                                int frameWidth = imgSavePointSheet.getWidth() / SAVE_POINT_FRAMES;
+                                int frameHeight = imgSavePointSheet.getHeight();
+                                g2d.drawImage(imgSavePointSheet, drawX, drawY, drawX + TILE_SIZE, drawY + TILE_SIZE, 
+                                    currentFrame * frameWidth, 0, (currentFrame + 1) * frameWidth, frameHeight, null);
+                            } else {
+                                g2d.setColor(Color.GREEN);
+                                g2d.fillOval(drawX + 8, drawY + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+                            }
                         }
                     } else {
                         BufferedImage objImg = objectSprites.get(content.getClass());
-                        if (objImg != null) g2d.drawImage(objImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
+                        if (objImg != null) {
+                            g2d.drawImage(objImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
+                        } else {
+                            if (content instanceof Trap) g2d.setColor(Color.ORANGE);
+                            else g2d.setColor(Color.YELLOW);
+                            g2d.fillRect(drawX + 10, drawY + 10, TILE_SIZE - 20, TILE_SIZE - 20);
+                        }
                     }
                 }
             }
         }
-        // Enemies
+
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 Enemy enemy = grid.getEnemyAt(x, y);
@@ -165,32 +179,41 @@ public class GamePanel extends JPanel {
                     if (enemySprite != null) {
                         g2d.drawImage(enemySprite, enemyDrawX, enemyDrawY, TILE_SIZE, TILE_SIZE, null);
                     } else {
-                        g.setColor(Color.RED);
-                        g.fillRect(enemyDrawX + 5, enemyDrawY + 5, TILE_SIZE - 10, TILE_SIZE - 10);
+                        if (enemy instanceof Boss) g2d.setColor(new Color(128, 0, 128)); 
+                        else g2d.setColor(Color.RED);
+                        
+                        g2d.fillRect(enemyDrawX + 5, enemyDrawY + 5, TILE_SIZE - 10, TILE_SIZE - 10);
                     }
                 }
             }
         }
-        // Player
+        
+        int px = offsetX + (player.getX() * TILE_SIZE);
+        int py = offsetY + (player.getY() * TILE_SIZE);
+        
+        if (player.isAttacking()) {
+            Direction dir = player.getFacingDirection();
+            if (dir == Direction.RIGHT) px += 20; 
+            else if (dir == Direction.LEFT) px -= 20; 
+            else if (dir == Direction.UP) py -= 20;
+            else if (dir == Direction.DOWN) py += 20; 
+        }
+
         BufferedImage krisSprite = spriteLoader.getPlayerSprite(player);
-        if (krisSprite != null) {
+        
+        if (krisSprite != null && krisSprite.getWidth() > 1) {
             int scale = 2;
             int drawW = krisSprite.getWidth() * scale;
             int drawH = krisSprite.getHeight() * scale;
-            int px = offsetX + (player.getX() * TILE_SIZE) + (TILE_SIZE - drawW) / 2;
-            int py = offsetY + (player.getY() * TILE_SIZE) + (TILE_SIZE - drawH) / 2;
             
-            if (player.isAttacking()) {
-                Direction dir = player.getFacingDirection();
-                // For cool moving feeling
-                if (dir == Direction.RIGHT) px += 20; 
-                else if (dir == Direction.LEFT) px -= 20; 
-                else if (dir == Direction.UP) py -= 20;
-                else if (dir == Direction.DOWN) py += 20; 
-            }
-            g2d.drawImage(krisSprite, px, py, drawW, drawH, null);
+            int spritePx = px + (TILE_SIZE - drawW) / 2;
+            int spritePy = py + (TILE_SIZE - drawH) / 2;
+            
+            g2d.drawImage(krisSprite, spritePx, spritePy, drawW, drawH, null);
+        } else {
+            g2d.setColor(Color.BLUE);
+            g2d.fillOval(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
         }
-        // Room rules (poison gas and such)
         code.world.Room currentRoom = grid.getCurrentRoom();
         if (currentRoom != null && currentRoom.getRules() != null && !currentRoom.getRules().isEmpty()) {
             g2d.setColor(new Color(150, 0, 200, 40)); 
@@ -207,7 +230,6 @@ public class GamePanel extends JPanel {
         }
     }
 
-    // Background that only changes when entering new room
     private void buildStaticBackground() {
         int width = grid.getWidth();
         int height = grid.getHeight();
@@ -225,29 +247,45 @@ public class GamePanel extends JPanel {
                 if (tile.isWalkable()) {
                     if (imgFloor != null) g2d.drawImage(imgFloor, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
                     else { g2d.setColor(new Color(220, 220, 220)); g2d.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE); }
-    
+
                     BufferedImage tileImg = tileSprites.get(tile.getClass());
                     if (tileImg != null) {
                         g2d.drawImage(tileImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
+                    } else {
+                        if (tile instanceof LavaTile) {
+                            g2d.setColor(new Color(255, 100, 0, 150));
+                            g2d.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                        } else if (tile instanceof HealingTile) {
+                            g2d.setColor(new Color(0, 255, 100, 150));
+                            g2d.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                        } else if (tile instanceof TrampolineTile) {
+                            g2d.setColor(Color.CYAN);
+                            g2d.fillOval(drawX + 8, drawY + 8, TILE_SIZE - 16, TILE_SIZE - 16);
+                        }
                     }
                 } else {
                     BufferedImage tileImg = tileSprites.get(tile.getClass());
                     if (tileImg != null) {
                         g2d.drawImage(tileImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
                     } else {
-                        BufferedImage wallImg = null;
-                        if (x == 0 && y == 0) wallImg = imgWallCornerTL;
-                        else if (x == width - 1 && y == 0) wallImg = imgWallCornerTR;
-                        else if (x == 0 && y == height - 1) wallImg = imgWallCornerBL;
-                        else if (x == width - 1 && y == height - 1) wallImg = imgWallCornerBR;
-                        else if (y == 0) wallImg = imgWallTop;
-                        else if (y == height - 1) wallImg = imgWallBottom;
-                        else if (x == 0) wallImg = imgWallLeft;
-                        else if (x == width - 1) wallImg = imgWallRight;
-                        else wallImg = imgWallTop;
+                        if (tile instanceof AbyssTile) {
+                            g2d.setColor(Color.BLACK);
+                            g2d.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE);
+                        } else {
+                            BufferedImage wallImg = null;
+                            if (x == 0 && y == 0) wallImg = imgWallCornerTL;
+                            else if (x == width - 1 && y == 0) wallImg = imgWallCornerTR;
+                            else if (x == 0 && y == height - 1) wallImg = imgWallCornerBL;
+                            else if (x == width - 1 && y == height - 1) wallImg = imgWallCornerBR;
+                            else if (y == 0) wallImg = imgWallTop;
+                            else if (y == height - 1) wallImg = imgWallBottom;
+                            else if (x == 0) wallImg = imgWallLeft;
+                            else if (x == width - 1) wallImg = imgWallRight;
+                            else wallImg = imgWallTop;
 
-                        if (wallImg != null) g2d.drawImage(wallImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
-                        else { g2d.setColor(Color.DARK_GRAY); g2d.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE); }
+                            if (wallImg != null) g2d.drawImage(wallImg, drawX, drawY, TILE_SIZE, TILE_SIZE, null);
+                            else { g2d.setColor(Color.DARK_GRAY); g2d.fillRect(drawX, drawY, TILE_SIZE, TILE_SIZE); }
+                        }
                     }
                 }
             }
