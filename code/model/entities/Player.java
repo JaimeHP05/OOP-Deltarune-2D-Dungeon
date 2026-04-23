@@ -62,8 +62,7 @@ public class Player extends Entity {
         this.exp -= this.expToNextLevel; 
         this.playerLevel++;
         this.expToNextLevel = this.playerLevel * 5; 
-        this.maxHp += 15;
-        this.modifyHp(15);
+        this.increaseMaxHp(15);
         System.out.println("LEVEL UP! You are now level " + this.playerLevel + ".");
     }
 
@@ -115,8 +114,8 @@ public class Player extends Entity {
     }
 
     public void onTurnTaken() {
-        if (poisoned) {
-            int poisonDamage = Math.max(1, this.maxHp / 100);
+        if (isPoisoned()) {
+            int poisonDamage = Math.max(1, this.getMaxHp() / 100);
             this.modifyHp(-poisonDamage);
         }
     }
@@ -142,11 +141,6 @@ public class Player extends Entity {
 
     public int getElectricLevel() { return electricLevel; }
     public void addElectric() { this.electricLevel++; }
-
-    public void increaseMaxHp(int amount) {
-        this.maxHp += amount;
-        this.hp += amount; 
-    }
 
     public boolean hasTrapImmunity() { return trapImmunityLevel > 0; }
     public boolean isBouncing() { return isBouncing; }
