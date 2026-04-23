@@ -4,9 +4,9 @@ import code.world.Room;
 public abstract class Enemy extends Entity {
     private static final long serialVersionUID = 1L;
 
-    protected int damage;
-    protected int expReward;
-    protected int immobilizedTurns = 0; 
+    private int damage;
+    private int expReward;
+    private int immobilizedTurns = 0; 
 
     public Enemy(String name, int startX, int startY, int maxHp, int baseDamage, int dungeonLevel, int expReward) {
         super(name, startX, startY, maxHp);
@@ -22,6 +22,7 @@ public abstract class Enemy extends Entity {
 
     public int getDamage() { return damage; }
     public int getExpReward() { return expReward; } 
+    public void setExpReward(int expReward) { this.expReward = expReward; }
     
     public void immobilize(int turns) {
         this.immobilizedTurns = Math.max(this.immobilizedTurns, turns);
