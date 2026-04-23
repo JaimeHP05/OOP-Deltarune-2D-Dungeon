@@ -6,7 +6,7 @@ import code.model.entities.Player;
 public abstract class Item implements Interactable {
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 1L;
-    protected String name;
+    private String name;
 
     public Item(String name) { this.name = name; }
     public String getName() { return name; }
