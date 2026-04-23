@@ -5,6 +5,6 @@ public class MiniSlime extends Enemy {
     
     public MiniSlime(int x, int y, int dungeonLevel) {
         super("MicroPhone", x, y, 15 + (dungeonLevel * 5), 4 + dungeonLevel);
-        this.expReward = 1;
+        this.setExpReward(1);
     }
 }
