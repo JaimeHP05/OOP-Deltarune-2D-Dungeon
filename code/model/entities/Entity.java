@@ -3,13 +3,13 @@ package code.model.entities;
 public abstract class Entity implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
-    protected String name;
-    protected int x;
-    protected int y;
-    protected int hp;
-    protected int maxHp;
+    private String name;
+    private int x;
+    private int y;
+    private int hp;
+    private int maxHp;
     
-    protected boolean poisoned = false;
+    private boolean poisoned = false;
 
     public Entity(String name, int startX, int startY, int maxHp) {
         this.name = name;
@@ -32,6 +32,11 @@ public abstract class Entity implements java.io.Serializable {
         if (this.hp > 0) {
             System.out.println("-> Current HP of " + name + ": " + hp + "/" + maxHp);
         }
+    }
+
+    public void increaseMaxHp(int amount) {
+        this.maxHp += amount;
+        this.hp += amount; 
     }
 
     public boolean isAlive() { return this.hp > 0; }
