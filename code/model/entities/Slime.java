@@ -6,18 +6,17 @@ public class Slime extends Enemy {
 
     public Slime(int x, int y, int dungeonLevel) {
         super("Phone", x, y, 40 + (dungeonLevel * 10), 8 + dungeonLevel);
-        this.expReward = 5; 
+        this.setExpReward(5); 
     }
 
     @Override
     public void onDeath(Player killer, Room room) {
-        super.onDeath(killer, room); 
-        
+        super.onDeath(killer, room);
         System.out.println("Phone splits into two MicroPhones!");
         int slimesCreated = 0;
         int[] adx = {-1, 1, 0, 0, -1, 1, -1, 1};
         int[] ady = {0, 0, -1, 1, -1, -1, 1, 1};
-
+        
         for (int i = 0; i < 8 && slimesCreated < 2; i++) {
             int tx = this.getX() + adx[i];
             int ty = this.getY() + ady[i];
