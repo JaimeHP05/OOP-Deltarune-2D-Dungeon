@@ -5,8 +5,8 @@ import code.model.entities.Entity;
 public class Tile implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
 
-    protected boolean walkable;
-    protected Interactable content;
+    private boolean walkable;
+    private Interactable content;
 
     public Tile(boolean walkable) {
         this.walkable = walkable;
